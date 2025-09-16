@@ -10,56 +10,99 @@ export default function BTCPriceDisplay() {
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [useFallback, setUseFallback] = useState(false);
 
   useEffect(() => {
-    const socket = new WebSocket('wss://ws.lightstream.bitflyer.com/json-rpc');
-
-    socket.onopen = () => {
-      console.log('WebSocket connected');
-      setIsConnected(true);
-      setError(null);
-      
-      // BTC/JPYの価格データを購読
-      const subscribeMessage = {
-        method: 'subscribe',
-        params: {
-          channel: 'lightning_ticker_BTC_JPY'
-        }
-      };
-      socket.send(JSON.stringify(subscribeMessage));
-    };
-
-    socket.onmessage = (event) => {
+    let socket: WebSocket | null = null;
+    
+    const connectWebSocket = () => {
       try {
-        const data = JSON.parse(event.data);
-        
-        if (data.params && data.params.message) {
-          const ticker = data.params.message;
-          setPrice({
-            ltp: ticker.ltp,
-            timestamp: new Date().toLocaleTimeString('ja-JP')
-          });
-        }
+        socket = new WebSocket('wss://ws.lightstream.bitflyer.com/json-rpc');
+
+        socket.onopen = () => {
+          console.log('WebSocket connected');
+          setIsConnected(true);
+          setError(null);
+          
+          // BTC/JPYの価格データを購読
+          const subscribeMessage = {
+            method: 'subscribe',
+            params: {
+              channel: 'lightning_ticker_BTC_JPY'
+            }
+          };
+          socket?.send(JSON.stringify(subscribeMessage));
+        };
+
+        socket.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            
+            if (data.params && data.params.message) {
+              const ticker = data.params.message;
+              setPrice({
+                ltp: ticker.ltp,
+                timestamp: new Date().toLocaleTimeString('ja-JP')
+              });
+            }
+          } catch (err) {
+            console.error('Error parsing WebSocket message:', err);
+            setError('データの解析に失敗しました');
+          }
+        };
+
+        socket.onerror = (error) => {
+          console.error('WebSocket error:', error);
+          setError('接続エラーが発生しました');
+          setIsConnected(false);
+        };
+
+        socket.onclose = (event) => {
+          console.log('WebSocket disconnected:', event.code, event.reason);
+          setIsConnected(false);
+          // 自動再接続（5秒後）
+          setTimeout(() => {
+            if (!socket || socket.readyState === WebSocket.CLOSED) {
+              connectWebSocket();
+            }
+          }, 5000);
+        };
       } catch (err) {
-        console.error('Error parsing WebSocket message:', err);
-        setError('データの解析に失敗しました');
+        console.error('WebSocket connection failed:', err);
+        setError('WebSocket接続に失敗しました');
+        setIsConnected(false);
       }
     };
 
-    socket.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      setError('接続エラーが発生しました');
-      setIsConnected(false);
+    // フォールバック用のREST API取得関数
+    const fetchPriceFromAPI = async () => {
+      try {
+        const response = await fetch('https://api.bitflyer.com/v1/ticker?product_code=BTC_JPY');
+        if (response.ok) {
+          const data = await response.json();
+          setPrice({
+            ltp: data.ltp,
+            timestamp: new Date().toLocaleTimeString('ja-JP')
+          });
+          setUseFallback(true);
+        }
+      } catch (err) {
+        console.error('API fallback failed:', err);
+      }
     };
 
-    socket.onclose = () => {
-      console.log('WebSocket disconnected');
-      setIsConnected(false);
-    };
+    // 初期接続
+    connectWebSocket();
+
+    // フォールバック用の定期取得（30秒間隔）
+    const fallbackInterval = setInterval(fetchPriceFromAPI, 30000);
 
     // クリーンアップ
     return () => {
-      socket.close();
+      if (socket) {
+        socket.close();
+      }
+      clearInterval(fallbackInterval);
     };
   }, []);
 
@@ -129,6 +172,9 @@ export default function BTCPriceDisplay() {
           {price && (
             <div className="mt-2 text-xs text-gray-400">
               最終更新: {price.timestamp}
+              {useFallback && !isConnected && (
+                <span className="ml-2 text-orange-400">(API取得)</span>
+              )}
             </div>
           )}
         </div>

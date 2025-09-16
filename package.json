@@ -5,9 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:port3000": "vite --port 3000 --strictPort",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "vite preview --port 3000"
+    "start": "vite preview --port 3000",
+    "kill-port": "lsof -ti:3000 | xargs kill -9",
+    "keep-alive": "./keep-alive.sh"
   },
   "dependencies": {
     "react-dom": "^19.1.1",

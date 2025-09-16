@@ -6,7 +6,9 @@ export default defineConfig(({ mode }) => {
     return {
       server: {
         port: 3000,
-        open: true
+        strictPort: true, // ポート3000が使用中でもエラーで停止しない
+        open: true,
+        host: true // ネットワークからもアクセス可能にする
       },
       define: {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),

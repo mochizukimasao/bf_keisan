@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { CalculationType, CalculationResult } from '../types';
 import ResultDisplay from './ResultDisplay';
-import FeeExplanation from './FeeExplanation';
 
 const CalculationTypeButton: React.FC<{
   label: string;
@@ -331,8 +330,6 @@ const Calculator: React.FC = () => {
           {error}
         </div>
       )}
-
-      <FeeExplanation />
 
       {result && <ResultDisplay result={result} />}
     </div>

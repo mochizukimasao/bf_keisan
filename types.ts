@@ -1,4 +1,12 @@
 
+export enum CalculationType {
+  BuyJPY = 'BuyJPY',
+  BuyBTC = 'BuyBTC',
+  BuyWithBalance = 'BuyWithBalance',
+  SellBTC = 'SellBTC',
+  ReceiveJPY = 'ReceiveJPY'
+}
+
 export interface CalculationResult {
   orderAmount: string;
   orderAmountSubtext?: string;
