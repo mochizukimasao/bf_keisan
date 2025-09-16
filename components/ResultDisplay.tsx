@@ -27,12 +27,12 @@ const ResultCard: React.FC<{
     };
 
     return (
-        <div className={`relative bg-white/5 backdrop-blur-xl p-6 rounded-2xl border ${isPrimary ? 'bg-orange-500/10 border-orange-500/30' : 'border-white/10'}`}>
+        <div className={`relative bg-white/5 backdrop-blur-xl p-6 rounded-2xl border ${isPrimary ? 'bg-blue-500/10 border-blue-500/30' : 'border-white/10'}`}>
             <h3 className="text-sm font-medium text-gray-400">{title}</h3>
-            <p className={`mt-2 text-2xl md:text-3xl font-light tracking-tight ${isPrimary ? 'text-orange-300' : 'text-white'}`}>{value}</p>
+            <p className={`mt-2 text-2xl md:text-3xl font-light tracking-tight ${isPrimary ? 'text-blue-300' : 'text-white'}`}>{value}</p>
             {subtext && <p className="text-xs text-gray-500 mt-1">{subtext}</p>}
              {isPrimary && title === "手数料差引後の受取BTC量" && (
-                <p className="text-xs text-orange-300 mt-3">
+                <p className="text-xs text-blue-300 mt-3">
                     👆 この値をbitFlyerの注文画面にコピー＆ペーストしてください。
                 </p>
             )}
@@ -45,7 +45,7 @@ const ResultCard: React.FC<{
                         aria-label="クリップボードにコピー"
                     >
                         {isCopied ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                             </svg>
                         ) : (

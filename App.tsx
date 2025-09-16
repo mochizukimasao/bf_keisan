@@ -5,11 +5,11 @@ import BTCPriceDisplay from './components/BTCPriceDisplay';
 
 const App: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white font-sans flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white font-sans flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-2xl mx-auto">
         <header className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
               <span className="text-white text-lg font-bold">₿</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-light text-white tracking-tight">

@@ -2,27 +2,6 @@ import React, { useState, useMemo } from 'react';
 import { CalculationType, CalculationResult } from '../types';
 import ResultDisplay from './ResultDisplay';
 
-const CalculationTypeButton: React.FC<{
-  label: string;
-  type: CalculationType;
-  currentType: CalculationType;
-  setType: (type: CalculationType) => void;
-  className?: string;
-}> = ({ label, type, currentType, setType, className = '' }) => {
-  const isActive = type === currentType;
-  return (
-    <button
-      onClick={() => setType(type)}
-      className={`flex-1 px-3 py-2.5 text-xs md:text-sm font-medium rounded-xl transition-all duration-200 focus:outline-none ${
-        isActive
-          ? 'bg-orange-500 text-white shadow-lg'
-          : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/10'
-      } ${className}`}
-    >
-      {label}
-    </button>
-  );
-};
 
 const PasteIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -227,16 +206,6 @@ const Calculator: React.FC = () => {
   return (
     <div className="bg-white/5 backdrop-blur-xl p-6 md:p-8 rounded-2xl shadow-2xl border border-white/10">
       <div className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-3">計算タイプ</label>
-           <div className="grid grid-cols-5 gap-2">
-            <CalculationTypeButton label="円で買う" type={CalculationType.BuyJPY} currentType={calculationType} setType={setCalculationType} />
-            <CalculationTypeButton label="BTCで買う" type={CalculationType.BuyBTC} currentType={calculationType} setType={setCalculationType} />
-            <CalculationTypeButton label="残高で買う" type={CalculationType.BuyWithBalance} currentType={calculationType} setType={setCalculationType} />
-            <CalculationTypeButton label="BTCを売る" type={CalculationType.SellBTC} currentType={calculationType} setType={setCalculationType} />
-            <CalculationTypeButton label="円で受け取る" type={CalculationType.ReceiveJPY} currentType={calculationType} setType={setCalculationType} />
-          </div>
-        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -318,7 +287,7 @@ const Calculator: React.FC = () => {
         <div>
           <button
             onClick={handleCalculate}
-            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium py-4 px-6 rounded-xl hover:from-orange-600 hover:to-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg"
+            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium py-4 px-6 rounded-xl hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg"
           >
             計算する
           </button>
