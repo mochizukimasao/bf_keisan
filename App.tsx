@@ -2,6 +2,7 @@ import React from 'react';
 import Calculator from './components/Calculator';
 import Disclaimer from './components/Disclaimer';
 import BTCPriceDisplay from './components/BTCPriceDisplay';
+import Footer from './components/Footer';
 
 const App: React.FC = () => {
   return (
@@ -9,7 +10,7 @@ const App: React.FC = () => {
       <div className="w-full max-w-2xl mx-auto">
         <header className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center" aria-label="ビットコインアイコン">
               <span className="text-white text-lg font-bold">₿</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-light text-gray-900 tracking-tight">
@@ -21,13 +22,14 @@ const App: React.FC = () => {
           </p>
         </header>
 
-        <main>
+        <main role="main">
           <BTCPriceDisplay />
           <Calculator />
         </main>
 
         <footer className="mt-8">
           <Disclaimer />
+          <Footer />
         </footer>
       </div>
     </div>
