@@ -128,22 +128,22 @@ export default function BTCPriceDisplay() {
   };
 
   return (
-    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 mb-6 shadow-2xl">
+    <div className="bg-white/80 backdrop-blur-xl border border-gray-200 rounded-2xl p-6 mb-6 shadow-lg">
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></div>
-            <h3 className="text-sm font-medium text-gray-300">リアルタイム価格</h3>
+            <h3 className="text-sm font-medium text-gray-700">リアルタイム価格</h3>
           </div>
           
           {price ? (
             <div className="flex items-center gap-3">
-              <div className="text-3xl font-light text-white tracking-tight">
+              <div className="text-3xl font-light text-gray-900 tracking-tight">
                 {formatPrice(price.ltp)}
               </div>
               <button
                 onClick={copyPrice}
-                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-all duration-200 active:scale-95"
+                className="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-all duration-200 active:scale-95"
                 title="価格をコピー"
               >
                 {copied ? (
@@ -151,14 +151,14 @@ export default function BTCPriceDisplay() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 ) : (
-                  <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                   </svg>
                 )}
               </button>
             </div>
           ) : (
-            <div className="text-xl text-gray-400">
+            <div className="text-xl text-gray-600">
               {error ? (
                 <span className="text-red-400">接続エラー</span>
               ) : isConnected ? (
@@ -170,7 +170,7 @@ export default function BTCPriceDisplay() {
           )}
           
           {price && (
-            <div className="mt-2 text-xs text-gray-400">
+            <div className="mt-2 text-xs text-gray-600">
               最終更新: {price.timestamp}
               {useFallback && !isConnected && (
                 <span className="ml-2 text-blue-400">(API取得)</span>
@@ -183,7 +183,7 @@ export default function BTCPriceDisplay() {
           <div className={`w-3 h-3 rounded-full ${
             isConnected ? 'bg-blue-400' : 'bg-red-400'
           }`}></div>
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-gray-600">
             {isConnected ? 'LIVE' : 'OFF'}
           </div>
         </div>
