@@ -1,7 +1,29 @@
 import React, { useState, useMemo } from 'react';
-import { CalculationResult } from '../types';
+import { CalculationType, CalculationResult } from '../types';
 import ResultDisplay from './ResultDisplay';
+import FeeExplanation from './FeeExplanation';
 
+const CalculationTypeButton: React.FC<{
+  label: string;
+  type: CalculationType;
+  currentType: CalculationType;
+  setType: (type: CalculationType) => void;
+  className?: string;
+}> = ({ label, type, currentType, setType, className = '' }) => {
+  const isActive = type === currentType;
+  return (
+    <button
+      onClick={() => setType(type)}
+      className={`flex-1 px-3 py-2.5 text-xs md:text-sm font-medium rounded-xl transition-all duration-200 focus:outline-none ${
+        isActive
+          ? 'bg-orange-500 text-white shadow-lg'
+          : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/10'
+      } ${className}`}
+    >
+      {label}
+    </button>
+  );
+};
 
 const PasteIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -17,6 +39,9 @@ const PasteSuccessIcon: React.FC = () => (
 
 
 const Calculator: React.FC = () => {
+  const [calculationType, setCalculationType] = useState<CalculationType>(
+    CalculationType.BuyJPY
+  );
   const [amount, setAmount] = useState<string>('');
   const [btcPrice, setBtcPrice] = useState<string>('');
   const [feeRate, setFeeRate] = useState<string>('0.15');
@@ -102,33 +127,74 @@ const Calculator: React.FC = () => {
       setError('有効な手数料率を入力してください。');
       return;
     }
-    if (isNaN(numBtcPrice) || numBtcPrice <= 0) {
+
+    const needsBtcPrice = ![CalculationType.BuyJPY].includes(calculationType);
+
+    if (needsBtcPrice && (isNaN(numBtcPrice) || numBtcPrice <= 0)) {
       setError('有効なBTC価格を入力してください。');
       return;
     }
 
-    try {
-        // BTC数量で計算
-        const grossJPY = numAmount * numBtcPrice;
-        const feeAmount = grossJPY * (numFeeRate / 100);
-        const netJPY = grossJPY - feeAmount;
-        const netBTC = netJPY / numBtcPrice;
-        
-        const newResult: CalculationResult = {
-            orderAmount: `${numAmount.toFixed(8)} BTC`,
-            orderAmountSubtext: `約 ${grossJPY.toLocaleString('ja-JP', { maximumFractionDigits: 0 })} 円`,
-            feeAmount: `${feeAmount.toLocaleString('ja-JP', { maximumFractionDigits: 0 })} 円`,
-            feeRate: `${numFeeRate}%`,
-            netAmount: `${netJPY.toLocaleString('ja-JP', { maximumFractionDigits: 0 })} 円`,
-            netBTCAmount: `${netBTC.toFixed(8)} BTC`,
-            copyableValues: {
-                orderAmount: numAmount.toFixed(8),
-                feeAmount: feeAmount.toFixed(0),
-                netAmount: netJPY.toFixed(0),
-                netBTCAmount: netBTC.toFixed(8),
-            },
-        };
+    const feeMultiplier = 1 - numFeeRate / 100;
+    const feeAdder = 1 + numFeeRate / 100;
+    let newResult: CalculationResult | null = null;
 
+    try {
+        switch (calculationType) {
+            case CalculationType.BuyJPY: {
+                const orderJPY = numAmount * feeAdder;
+                 newResult = {
+                    orderInput: `約 ${orderJPY.toLocaleString('ja-JP', { maximumFractionDigits: 0 })} 円`,
+                    netAmount: `${numAmount.toLocaleString('ja-JP')} 円分のBTC`,
+                    formula: `${numAmount.toLocaleString('ja-JP')} × (1 + ${numFeeRate / 100})`,
+                    copyableValue: Math.round(orderJPY).toString(),
+                };
+                break;
+            }
+             case CalculationType.BuyWithBalance: {
+                const netJPY = numAmount / feeAdder;
+                const netBTC = netJPY / numBtcPrice;
+                newResult = {
+                    orderInput: `${numAmount.toLocaleString('ja-JP', { maximumFractionDigits: 0 })} 円`,
+                    netAmount: `約 ${netBTC.toFixed(8)} BTC ( ${netJPY.toLocaleString('ja-JP', { maximumFractionDigits: 0 })} 円分 )`,
+                    formula: `${numAmount.toLocaleString('ja-JP')} ÷ (1 + ${numFeeRate / 100})`,
+                    copyableValue: numAmount.toString(),
+                };
+                break;
+            }
+            case CalculationType.BuyBTC: {
+                const orderBTC = numAmount / feeMultiplier;
+                const orderJPY = orderBTC * numBtcPrice;
+                newResult = {
+                    orderInput: `${orderBTC.toFixed(8)} BTC`,
+                    orderInputSubtext: `(参考: 約 ${orderJPY.toLocaleString('ja-JP', { maximumFractionDigits: 0 })} 円)`,
+                    netAmount: `${numAmount.toFixed(8)} BTC`,
+                    formula: `${numAmount} ÷ (1 - ${numFeeRate / 100})`,
+                    copyableValue: orderBTC.toFixed(8),
+                };
+                break;
+            }
+            case CalculationType.SellBTC: {
+                const receivedJPY = numAmount * numBtcPrice * feeMultiplier;
+                newResult = {
+                    orderInput: `${numAmount.toFixed(8)} BTC`,
+                    netAmount: `約 ${receivedJPY.toLocaleString('ja-JP', { maximumFractionDigits: 0 })} 円`,
+                    formula: `${numAmount} × ${numBtcPrice.toLocaleString('ja-JP')} × (1 - ${numFeeRate / 100})`,
+                    copyableValue: numAmount.toFixed(8),
+                };
+                break;
+            }
+            case CalculationType.ReceiveJPY: {
+                const orderBTC = numAmount / (numBtcPrice * feeMultiplier);
+                newResult = {
+                    orderInput: `${orderBTC.toFixed(8)} BTC`,
+                    netAmount: `約 ${numAmount.toLocaleString('ja-JP')} 円`,
+                    formula: `${numAmount.toLocaleString('ja-JP')} ÷ (${numBtcPrice.toLocaleString('ja-JP')} × (1 - ${numFeeRate / 100}))`,
+                    copyableValue: orderBTC.toFixed(8),
+                };
+                break;
+            }
+        }
         setResult(newResult);
     } catch (e) {
         setError('計算中にエラーが発生しました。入力値を確認してください。');
@@ -136,26 +202,74 @@ const Calculator: React.FC = () => {
     }
   };
 
-
-  // リアルタイムでBTC数量を日本円に変換
-  const realtimeJPY = useMemo(() => {
-    const numAmount = parseFloat(amount);
-    const numBtcPrice = parseFloat(btcPrice.replace(/,/g, ''));
-    
-    if (!isNaN(numAmount) && !isNaN(numBtcPrice) && numAmount > 0 && numBtcPrice > 0) {
-      const jpyValue = numAmount * numBtcPrice;
-      return jpyValue.toLocaleString('ja-JP', { maximumFractionDigits: 0 });
+  const { label, placeholder } = useMemo(() => {
+    switch (calculationType) {
+      case CalculationType.BuyJPY:
+        return { label: '欲しいBTCの金額', placeholder: '例: 10,000' };
+      case CalculationType.BuyBTC:
+        return { label: '取得したいBTC量', placeholder: '例: 0.01' };
+       case CalculationType.BuyWithBalance:
+        return { label: '支払う日本円の総額 (口座残高)', placeholder: '例: 10,000' };
+      case CalculationType.SellBTC:
+        return { label: '売却したいBTC量', placeholder: '例: 0.01' };
+      case CalculationType.ReceiveJPY:
+        return { label: '受け取りたい金額', placeholder: '例: 10,000' };
+      default:
+        return { label: '', placeholder: '' };
     }
-    return '';
-  }, [amount, btcPrice]);
+  }, [calculationType]);
+
+  const isJPYAmount = useMemo(() => {
+      return [CalculationType.BuyJPY, CalculationType.ReceiveJPY, CalculationType.BuyWithBalance].includes(calculationType);
+  }, [calculationType]);
+  const unit = isJPYAmount ? '円' : 'BTC';
 
 
   return (
-    <div className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-2xl border border-gray-700">
+    <div className="bg-white/5 backdrop-blur-xl p-6 md:p-8 rounded-2xl shadow-2xl border border-white/10">
       <div className="space-y-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-3">計算タイプ</label>
+           <div className="grid grid-cols-5 gap-2">
+            <CalculationTypeButton label="円で買う" type={CalculationType.BuyJPY} currentType={calculationType} setType={setCalculationType} />
+            <CalculationTypeButton label="BTCで買う" type={CalculationType.BuyBTC} currentType={calculationType} setType={setCalculationType} />
+            <CalculationTypeButton label="残高で買う" type={CalculationType.BuyWithBalance} currentType={calculationType} setType={setCalculationType} />
+            <CalculationTypeButton label="BTCを売る" type={CalculationType.SellBTC} currentType={calculationType} setType={setCalculationType} />
+            <CalculationTypeButton label="円で受け取る" type={CalculationType.ReceiveJPY} currentType={calculationType} setType={setCalculationType} />
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="btcPrice" className="block text-sm font-medium text-gray-300 mb-2">BTC価格</label>
+            <label htmlFor="amount" className="block text-sm font-medium text-gray-300 mb-2">{label}</label>
+            <div className="relative">
+              <input
+                type="text"
+                inputMode={isJPYAmount ? 'numeric' : 'decimal'}
+                id="amount"
+                value={isJPYAmount ? formatIntegerWithCommas(amount) : amount}
+                onChange={
+                    isJPYAmount
+                      ? (e) => handleIntegerInputChange(e, setAmount)
+                      : (e) => handleDecimalInputChange(e, setAmount)
+                }
+                placeholder={placeholder}
+                className="w-full bg-white/10 border border-white/20 rounded-xl py-3 pl-4 pr-24 text-white placeholder-gray-400 focus:ring-2 focus:ring-white/20 focus:border-white/30 focus:bg-white/15 transition-all duration-200"
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                <span className="text-gray-400 mr-2">{unit}</span>
+                <button
+                  onClick={() => handlePaste('amount', setAmount, isJPYAmount)}
+                  className="p-2 bg-white/10 rounded-lg text-gray-400 hover:text-white hover:bg-white/20 transition-all duration-200 active:scale-95 focus:outline-none"
+                  aria-label="クリップボードから貼り付け"
+                >
+                  {pastedField === 'amount' ? <PasteSuccessIcon /> : <PasteIcon />}
+                </button>
+              </div>
+            </div>
+          </div>
+          <div>
+            <label htmlFor="btcPrice" className="block text-sm font-medium text-gray-300 mb-2">現在のBTC価格</label>
              <div className="relative">
               <input
                 type="text"
@@ -164,45 +278,23 @@ const Calculator: React.FC = () => {
                 value={formatIntegerWithCommas(btcPrice)}
                 onChange={(e) => handleIntegerInputChange(e, setBtcPrice)}
                 placeholder="例: 7,000,000"
-                className="w-full bg-gray-900 border border-gray-600 rounded-md py-2 pl-3 pr-24 text-white focus:ring-blue-500 focus:border-blue-500"
+                className="w-full bg-white/10 border border-white/20 rounded-xl py-3 pl-4 pr-24 text-white placeholder-gray-400 focus:ring-2 focus:ring-white/20 focus:border-white/30 focus:bg-white/15 transition-all duration-200 disabled:bg-white/5 disabled:cursor-not-allowed"
+                disabled={calculationType === CalculationType.BuyJPY}
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                <span className="text-gray-400 mr-2">円/BTC</span>
+                <span className="text-gray-400 mr-2">円</span>
                  <button
                   onClick={() => handlePaste('btcPrice', setBtcPrice, true)}
-                  className="p-1.5 bg-gray-700/50 rounded-md text-gray-400 hover:text-white hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-blue-500"
+                  className="p-2 bg-white/10 rounded-lg text-gray-400 hover:text-white hover:bg-white/20 transition-all duration-200 active:scale-95 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   aria-label="クリップボードから貼り付け"
+                  disabled={calculationType === CalculationType.BuyJPY}
                 >
                   {pastedField === 'btcPrice' ? <PasteSuccessIcon /> : <PasteIcon />}
                 </button>
               </div>
             </div>
-          </div>
-          <div>
-            <label htmlFor="amount" className="block text-sm font-medium text-gray-300 mb-2">BTC数量</label>
-            <div className="relative">
-              <input
-                type="text"
-                inputMode="decimal"
-                id="amount"
-                value={amount}
-                onChange={(e) => handleDecimalInputChange(e, setAmount)}
-                placeholder="例: 0.01"
-                className="w-full bg-gray-900 border border-gray-600 rounded-md py-2 pl-3 pr-24 text-white focus:ring-blue-500 focus:border-blue-500"
-              />
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                <span className="text-gray-400 mr-2">BTC</span>
-                <button
-                  onClick={() => handlePaste('amount', setAmount, false)}
-                  className="p-1.5 bg-gray-700/50 rounded-md text-gray-400 hover:text-white hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-blue-500"
-                  aria-label="クリップボードから貼り付け"
-                >
-                  {pastedField === 'amount' ? <PasteSuccessIcon /> : <PasteIcon />}
-                </button>
-              </div>
-            </div>
-            {realtimeJPY && (
-              <p className="text-xs text-blue-400 mt-1">約 {realtimeJPY} 円</p>
+             {calculationType === CalculationType.BuyJPY && (
+                <p className="text-xs text-gray-500 mt-1">このモードではBTC価格は不要です。</p>
             )}
           </div>
         </div>
@@ -216,7 +308,7 @@ const Calculator: React.FC = () => {
                 id="feeRate"
                 value={feeRate}
                 onChange={(e) => handleDecimalInputChange(e, setFeeRate)}
-                className="w-full bg-gray-900 border border-gray-600 rounded-md py-2 pl-3 pr-12 text-white focus:ring-blue-500 focus:border-blue-500"
+                className="w-full bg-white/10 border border-white/20 rounded-xl py-3 pl-4 pr-12 text-white placeholder-gray-400 focus:ring-2 focus:ring-white/20 focus:border-white/30 focus:bg-white/15 transition-all duration-200"
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                 <span className="text-gray-400">%</span>
@@ -227,7 +319,7 @@ const Calculator: React.FC = () => {
         <div>
           <button
             onClick={handleCalculate}
-            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 px-4 rounded-md hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-blue-500 transition-all duration-200 transform hover:scale-105"
+            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium py-4 px-6 rounded-xl hover:from-orange-600 hover:to-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg"
           >
             計算する
           </button>
@@ -235,10 +327,12 @@ const Calculator: React.FC = () => {
       </div>
 
       {error && (
-        <div className="mt-4 text-center p-3 bg-red-900/50 text-red-300 border border-red-500/50 rounded-md">
+        <div className="mt-4 text-center p-4 bg-red-500/10 text-red-300 border border-red-500/20 rounded-xl backdrop-blur-sm">
           {error}
         </div>
       )}
+
+      <FeeExplanation />
 
       {result && <ResultDisplay result={result} />}
     </div>

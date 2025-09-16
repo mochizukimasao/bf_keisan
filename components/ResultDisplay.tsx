@@ -27,12 +27,12 @@ const ResultCard: React.FC<{
     };
 
     return (
-        <div className={`relative bg-gray-900/50 p-4 rounded-lg ${isPrimary ? 'bg-blue-900/30 border-2 border-blue-500' : 'border border-gray-700'}`}>
+        <div className={`relative bg-white/5 backdrop-blur-xl p-6 rounded-2xl border ${isPrimary ? 'bg-orange-500/10 border-orange-500/30' : 'border-white/10'}`}>
             <h3 className="text-sm font-medium text-gray-400">{title}</h3>
-            <p className={`mt-1 text-xl md:text-2xl font-bold ${isPrimary ? 'text-blue-300' : 'text-white'}`}>{value}</p>
+            <p className={`mt-2 text-2xl md:text-3xl font-light tracking-tight ${isPrimary ? 'text-orange-300' : 'text-white'}`}>{value}</p>
             {subtext && <p className="text-xs text-gray-500 mt-1">{subtext}</p>}
              {isPrimary && title === "手数料差引後の受取BTC量" && (
-                <p className="text-xs text-blue-300 mt-2">
+                <p className="text-xs text-orange-300 mt-3">
                     👆 この値をbitFlyerの注文画面にコピー＆ペーストしてください。
                 </p>
             )}
@@ -41,22 +41,22 @@ const ResultCard: React.FC<{
                 <div className="absolute top-3 right-3 group">
                     <button
                         onClick={handleCopy}
-                        className="p-1.5 bg-gray-700/50 rounded-md text-gray-400 hover:text-white hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-blue-500"
+                        className="p-2 bg-white/10 rounded-lg text-gray-400 hover:text-white hover:bg-white/20 transition-all duration-200 active:scale-95 focus:outline-none"
                         aria-label="クリップボードにコピー"
                     >
                         {isCopied ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                             </svg>
                         ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                             </svg>
                         )}
                     </button>
-                    <div className={`absolute -top-10 right-1/2 translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-xs rounded-md pointer-events-none transition-opacity duration-200 ${isCopied ? 'opacity-100' : 'opacity-0'}`}>
+                    <div className={`absolute -top-10 right-1/2 translate-x-1/2 px-3 py-1.5 bg-slate-800/90 backdrop-blur-sm text-white text-xs rounded-lg pointer-events-none transition-opacity duration-200 ${isCopied ? 'opacity-100' : 'opacity-0'}`}>
                         コピーしました！
-                        <div className="absolute top-full right-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-gray-900"></div>
+                        <div className="absolute top-full right-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-slate-800/90"></div>
                     </div>
                 </div>
             )}

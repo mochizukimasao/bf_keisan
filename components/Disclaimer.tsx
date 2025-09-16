@@ -2,13 +2,13 @@ import React from 'react';
 
 const Disclaimer: React.FC = () => {
   return (
-    <div className="text-xs text-gray-500 text-left bg-gray-800/50 p-4 rounded-lg border border-gray-700">
-      <h4 className="font-bold text-gray-400 mb-2">手数料の仕組み</h4>
+    <div className="text-xs text-gray-400 text-left bg-white/5 backdrop-blur-xl p-6 rounded-2xl border border-white/10">
+      <h4 className="font-semibold text-gray-300 mb-3">手数料の仕組み</h4>
       <div className="mb-4">
         <p className="mb-2">手数料は約定金額から差し引かれます。例：0.01BTC × 7,000,000円 = 70,000円の取引で、手数料105円（0.15%）が差し引かれ、受取金額は69,895円になります。</p>
       </div>
       
-      <h4 className="font-bold text-gray-400 mb-2">免責事項</h4>
+      <h4 className="font-semibold text-gray-300 mb-3">免責事項</h4>
       <ul className="list-disc list-inside space-y-1">
         <li>
           本ツールはbitFlyerの取引所（Lightning）での取引を想定しています。スプレッドが実質的な手数料となる販売所には対応しておりません。
