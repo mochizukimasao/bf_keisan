@@ -1,0 +1,5 @@
+{
+  "name": "bitFlyer BTC売買手数料 逆算ツール",
+  "description": "bitFlyerの売買手数料を考慮し、希望する購入・売却額から、実際に注文画面に入力すべき数量や金額を逆算するツールです。",
+  "requestFramePermissions": []
+}
